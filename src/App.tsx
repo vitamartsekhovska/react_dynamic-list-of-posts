@@ -20,6 +20,7 @@ export const App = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isError, setIsError] = useState(false);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [isUsersError, setIsUsersError] = useState(false);
 
   const handleSelectUser = (user: User | null) => {
     setSelectedUser(user);
@@ -31,9 +32,16 @@ export const App = () => {
   };
 
   useEffect(() => {
-    client.get<User[]>('/users').then(data => {
-      setUsers(data);
-    });
+    setIsUsersError(false);
+
+    client
+      .get<User[]>('/users')
+      .then(data => {
+        setUsers(data);
+      })
+      .catch(() => {
+        setIsUsersError(true);
+      });
   }, []);
 
   useEffect(() => {
@@ -74,6 +82,12 @@ export const App = () => {
                 />
               </div>
 
+              {isUsersError && (
+                <div className="notification is-danger">
+                  Unable to load users
+                </div>
+              )}
+
               <div className="block" data-cy="MainContent">
                 {!selectedUser && (
                   <p data-cy="NoSelectedUser">No user selected</p>
@@ -90,7 +104,7 @@ export const App = () => {
                   </div>
                 )}
 
-                {!isError && !isLoading && posts.length === 0 && (
+                {!isError && !isLoading && selectedUser && !posts.length && (
                   <div className="notification is-warning" data-cy="NoPostsYet">
                     No posts yet
                   </div>
