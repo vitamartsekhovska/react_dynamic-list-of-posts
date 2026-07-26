@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import PropTypes from 'prop-types';
 import cn from 'classnames';
 import { User } from '../types/User';
 
@@ -86,4 +87,18 @@ export const UserSelector: React.FC<Props> = ({
       </div>
     </div>
   );
+};
+
+const userShape = PropTypes.shape({
+  id: PropTypes.number.isRequired,
+  name: PropTypes.string.isRequired,
+  username: PropTypes.string.isRequired,
+  email: PropTypes.string.isRequired,
+  phone: PropTypes.string.isRequired, // <-- додали isRequired
+});
+
+UserSelector.propTypes = {
+  users: PropTypes.arrayOf(userShape.isRequired).isRequired,
+  selectedUser: userShape,
+  onSelect: PropTypes.func.isRequired,
 };

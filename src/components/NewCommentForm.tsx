@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import PropTypes from 'prop-types';
 import cn from 'classnames';
 import { Comment } from '../types/Comment';
 import { client } from '../utils/fetchClient';
@@ -16,6 +17,7 @@ export const NewCommentForm: React.FC<Props> = ({ postId, onAddComment }) => {
   const [hasEmailError, setHasEmailError] = useState(false);
   const [hasBodyError, setHasBodyError] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
@@ -23,6 +25,7 @@ export const NewCommentForm: React.FC<Props> = ({ postId, onAddComment }) => {
     setHasNameError(!name.trim());
     setHasEmailError(!email.trim());
     setHasBodyError(!body.trim());
+    setErrorMessage('');
 
     if (!name.trim() || !email.trim() || !body.trim()) {
       return;
@@ -42,6 +45,9 @@ export const NewCommentForm: React.FC<Props> = ({ postId, onAddComment }) => {
       .then(newComment => {
         onAddComment(newComment);
         setBody('');
+      })
+      .catch(() => {
+        setErrorMessage('Unable to add a comment');
       })
       .finally(() => {
         setIsSubmitting(false);
@@ -169,6 +175,12 @@ export const NewCommentForm: React.FC<Props> = ({ postId, onAddComment }) => {
         )}
       </div>
 
+      {errorMessage && (
+        <div className="notification is-danger" data-cy="ErrorNotification">
+          {errorMessage}
+        </div>
+      )}
+
       <div className="field is-grouped">
         <div className="control">
           <button
@@ -188,4 +200,9 @@ export const NewCommentForm: React.FC<Props> = ({ postId, onAddComment }) => {
       </div>
     </form>
   );
+};
+
+NewCommentForm.propTypes = {
+  postId: PropTypes.number.isRequired,
+  onAddComment: PropTypes.func.isRequired,
 };

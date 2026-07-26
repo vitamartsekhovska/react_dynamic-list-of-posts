@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import PropTypes from 'prop-types';
 import { Loader } from './Loader';
 import { NewCommentForm } from './NewCommentForm';
 import { Post } from '../types/Post';
@@ -14,16 +15,21 @@ export const PostDetails: React.FC<Props> = ({ post }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isError, setIsError] = useState(false);
   const [isWriting, setIsWriting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const onAddComment = (newComment: Comment) => {
     setComments(currentComments => [...currentComments, newComment]);
   };
 
   const onDeleteComment = (commentId: number) => {
-    client.delete(`/comments/${commentId}`).then(() => {
-      setComments(currentComments =>
-        currentComments.filter(comment => comment.id !== commentId),
-      );
+    setErrorMessage('');
+
+    setComments(currentComments =>
+      currentComments.filter(comment => comment.id !== commentId),
+    );
+
+    client.delete(`/comments/${commentId}`).catch(() => {
+      setErrorMessage('Unable to delete a comment');
     });
   };
 
@@ -31,6 +37,7 @@ export const PostDetails: React.FC<Props> = ({ post }) => {
     setIsLoading(true);
     setIsError(false);
     setIsWriting(false);
+    setErrorMessage('');
 
     client
       .get<Comment[]>(`/comments?postId=${post.id}`)
@@ -101,6 +108,12 @@ export const PostDetails: React.FC<Props> = ({ post }) => {
           </>
         )}
 
+        {errorMessage && (
+          <div className="notification is-danger" data-cy="ErrorNotification">
+            {errorMessage}
+          </div>
+        )}
+
         {!isLoading && !isError && !isWriting && (
           <button
             data-cy="WriteCommentButton"
@@ -118,4 +131,13 @@ export const PostDetails: React.FC<Props> = ({ post }) => {
       )}
     </div>
   );
+};
+
+PostDetails.propTypes = {
+  post: PropTypes.shape({
+    id: PropTypes.number.isRequired,
+    userId: PropTypes.number.isRequired,
+    title: PropTypes.string.isRequired,
+    body: PropTypes.string.isRequired,
+  }).isRequired,
 };
